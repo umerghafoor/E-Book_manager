@@ -30,7 +30,6 @@ class RenameFileDialog(QDialog):
         self.new_genre_combo.addItem("History")
         self.new_genre_combo.addItem("Novels")
         self.new_genre_combo.addItem("Papers")
-        self.new_genre_combo.addItem("Biography")
         self.new_genre_combo.addItem("Poetry")
         self.new_genre_combo.addItem("Religious")
         self.new_genre_combo.addItem("Science")

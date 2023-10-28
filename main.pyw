@@ -1,7 +1,7 @@
 import os
 import sys
 from PyQt6.QtCore import QUrl
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QPushButton, QWidget, QLabel, QLineEdit, QDialog, QVBoxLayout, QHBoxLayout, QSpinBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QPushButton, QWidget, QLabel, QLineEdit, QDialog, QVBoxLayout, QHBoxLayout, QSpinBox, QComboBox
 from PyQt6.QtGui import QDesktopServices
 import configparser
 
@@ -27,7 +27,7 @@ class RenameDialog(QDialog):
         self.new_page_count_input = QSpinBox()
         self.new_page_count_input.setMinimum(1)
         self.new_page_count_input.setMaximum(10000)
-        self.new_page_count_input.setValue(int(old_page_count))  # Convert old_page_count to an integer
+        self.new_page_count_input.setValue(int(old_page_count))
 
         self.rename_button = QPushButton("Rename")
         self.rename_button.clicked.connect(self.accept)
@@ -58,9 +58,59 @@ class EbookManagerApp(QMainWindow):
 
         self.central_widget = QWidget(self)
         self.setCentralWidget(self.central_widget)
-        
 
         self.layout = QVBoxLayout(self.central_widget)
+        self.filter_layout = QVBoxLayout()
+        self.filter_line_layout = QHBoxLayout()
+        self.filter_label = QLabel("Filter by:")
+        self.filter_name_input = QLineEdit()
+        self.filter_author_input = QLineEdit()
+        self.filter_genre_combobox = QComboBox()
+        self.filter_genre_combobox.addItem("All Genres")
+        self.filter_genre_combobox.addItem("Art & Design")
+        self.filter_genre_combobox.addItem("Biography")
+        self.filter_genre_combobox.addItem("Engineering")
+        self.filter_genre_combobox.addItem("History")
+        self.filter_genre_combobox.addItem("Novels")
+        self.filter_genre_combobox.addItem("Papers")
+        self.filter_genre_combobox.addItem("Poetry")
+        self.filter_genre_combobox.addItem("Religious")
+        self.filter_genre_combobox.addItem("Science")
+        self.filter_genre_combobox.addItem("Self Motivation")
+        self.filter_genre_combobox.addItem("Other")
+        self.filter_page_count_greater_label = QLabel("Page Count >=")
+        self.filter_page_count_greater_input = QSpinBox()
+        self.filter_page_count_greater_input.setMinimum(1)
+        self.filter_page_count_greater_input.setMaximum(10000)
+        self.filter_page_count_smaller_label = QLabel("Page Count <=")
+        self.filter_page_count_smaller_input = QSpinBox()
+        self.filter_page_count_smaller_input.setMinimum(1)
+        self.filter_page_count_smaller_input.setMaximum(10000)
+        self.filter_page_count_smaller_input.setValue(10000)
+        self.filter_button = QPushButton("Filter")
+        self.filter_button.clicked.connect(self.apply_filter)
+        
+        self.clear_filters_button = QPushButton("Clear Filters")
+        self.clear_filters_button.clicked.connect(self.clear_filters)
+
+        
+        self.filter_line_layout.addWidget(self.filter_label)
+        self.filter_line_layout.addWidget(self.filter_name_input)
+        self.filter_line_layout.addWidget(self.filter_author_input)
+        self.filter_line_layout.addWidget(self.filter_genre_combobox)
+        self.filter_line_layout.addWidget(self.filter_page_count_greater_label)
+        self.filter_line_layout.addWidget(self.filter_page_count_greater_input)
+        self.filter_line_layout.addWidget(self.filter_page_count_smaller_label)
+        self.filter_line_layout.addWidget(self.filter_page_count_smaller_input)
+        self.filter_line_layout.addWidget(self.filter_button)
+        self.filter_line_layout.addWidget(self.clear_filters_button)
+
+        self.filter_layout.addLayout(self.filter_line_layout)
+        self.filter_tags_layout = QHBoxLayout()
+        self.filter_tags = QLabel("")
+        self.filter_tags_layout.addWidget(self.filter_tags)
+        self.filter_layout.addLayout(self.filter_tags_layout)
+        self.layout.addLayout(self.filter_layout)
 
         self.ebook_table = QTableWidget()
         self.ebook_table.cellDoubleClicked.connect(self.open_ebook)
@@ -79,6 +129,12 @@ class EbookManagerApp(QMainWindow):
         self.open_button = QPushButton("Open E-book")
         self.open_button.clicked.connect(self.open_ebook)
         self.layout.addWidget(self.open_button)
+
+        self.applied_filters = [] 
+
+    def update_applied_filters(self):
+        tags = [f"#{tag}" for tag in self.applied_filters]
+        self.filter_tags.setText(" ".join(tags))
 
     def load_last_path(self):
         config = configparser.ConfigParser()
@@ -112,9 +168,11 @@ class EbookManagerApp(QMainWindow):
                     ebook_list.append({"title": title, "author": author, "genre": genre, "page_count": page_count, "file_path": file_path})
         return ebook_list
 
-    def update_ebook_table(self):
-        self.ebook_table.setRowCount(len(self.ebooks))
-        for row, ebook in enumerate(self.ebooks):
+    def update_ebook_table(self, ebooks=None):
+        if ebooks is None:
+            ebooks = self.ebooks
+        self.ebook_table.setRowCount(len(ebooks))
+        for row, ebook in enumerate(ebooks):
             for col, field in enumerate(['title', 'author', 'genre', 'page_count', 'file_path']):
                 item = QTableWidgetItem(ebook[field])
                 self.ebook_table.setItem(row, col, item)
@@ -161,8 +219,49 @@ class EbookManagerApp(QMainWindow):
             title, author, genre, page_count = parts
         else:
             title = author = genre = "Unknown"
-            page_count = "1"  # Default page count
+            page_count = "1" 
         return title, author, genre, page_count
+
+    def apply_filter(self):
+        self.applied_filters = [] 
+        name_filter = self.filter_name_input.text().strip().lower()
+        author_filter = self.filter_author_input.text().strip().lower()
+        genre_filter = self.filter_genre_combobox.currentText()
+        page_count_greater_filter = self.filter_page_count_greater_input.value()
+        page_count_smaller_filter = self.filter_page_count_smaller_input.value()
+
+        if name_filter:
+            self.applied_filters.append(f"Name:{name_filter}")
+        if author_filter:
+            self.applied_filters.append(f"Author:{author_filter}")
+        if genre_filter != "All Genres":
+            self.applied_filters.append(f"Genre:{genre_filter}")
+        if page_count_greater_filter > 1:
+            self.applied_filters.append(f"Page>={page_count_greater_filter}")
+        if page_count_smaller_filter < 10000:
+            self.applied_filters.append(f"Page<={page_count_smaller_filter}")
+
+        self.update_applied_filters()
+
+        filtered_ebooks = [ebook for ebook in self.ebooks if
+                            (not name_filter or name_filter in ebook['title'].lower()) and
+                            (not author_filter or author_filter in ebook['author'].lower()) and
+                            (genre_filter == "All Genres" or genre_filter in ebook['genre']) and
+                            (page_count_greater_filter <= int(ebook['page_count']) <= page_count_smaller_filter)]
+
+        self.update_ebook_table(filtered_ebooks)
+
+    def clear_filters(self):
+        self.filter_name_input.clear()
+        self.filter_author_input.clear()
+        self.filter_genre_combobox.setCurrentIndex(0)
+        self.filter_page_count_greater_input.setValue(1)
+        self.filter_page_count_smaller_input.setValue(10000)
+        
+        self.applied_filters = [] 
+        self.update_applied_filters() 
+        
+        self.update_ebook_table(self.ebooks)
 
 def main():
     app = QApplication(sys.argv)
