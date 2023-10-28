@@ -58,10 +58,12 @@ class EbookManagerApp(QMainWindow):
 
         self.central_widget = QWidget(self)
         self.setCentralWidget(self.central_widget)
+        
 
         self.layout = QVBoxLayout(self.central_widget)
 
         self.ebook_table = QTableWidget()
+        self.ebook_table.cellDoubleClicked.connect(self.open_ebook)
         self.ebook_table.setColumnCount(5)
         self.ebook_table.setHorizontalHeaderLabels(['Title', 'Author', 'Genre', 'Page Count', 'File Path'])
         self.layout.addWidget(self.ebook_table)
