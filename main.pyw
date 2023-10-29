@@ -1,6 +1,6 @@
 import os
 import sys
-from PyQt6.QtCore import QUrl,Qt
+from PyQt6.QtCore import QUrl,Qt,QTimer
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QFileDialog, QVBoxLayout, QPushButton, QWidget, QLabel,QFrame,
     QLineEdit, QDialog, QHBoxLayout, QSpinBox, QComboBox, QGridLayout, QScrollArea, QSizePolicy, QButtonGroup,
@@ -175,45 +175,12 @@ class EbookCard(QFrame):  # Use QFrame as the outer container
             if os.path.exists(old_image_path):
                 os.rename(old_image_path, new_image_path)
 
-class PreviewCard(QFrame):
-    def __init__(self, title=None, author=None, genre=None, page_count=None, file_path=None, image_path=None, parent=None, app=None, ebooks=None, grid_layout=None):
-        super().__init__()
-        self.init_ui(title, author, genre, page_count, file_path, image_path, parent, app, ebooks, grid_layout)
-
-    def init_ui(self, title, author, genre, page_count, file_path, image_path, parent=None, app=None, ebooks=None, grid_layout=None):
-        self.setFixedWidth(300)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setStyleSheet("QFrame { border: 2px solid #000; border-radius: 20px; background-color: #f0f0f0; }")
-
-        self.playout = QVBoxLayout(self)
-
-        self.title_label = QLabel(title)  # Set the title_label text to the provided title
-        self.title_label.setWordWrap(True)
-
-        self.image_label = QLabel()  # Create a QLabel for displaying the image
-        self.image_label.setFixedWidth(280)
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.playout.addWidget(self.image_label)
-        self.playout.addWidget(self.title_label)
-        self.playout.addWidget(QLabel(f"Author: {author}"))  # Update author label
-        self.playout.addWidget(QLabel(f"Genre: {genre}"))    # Update genre label
-        self.playout.addWidget(QLabel(f"Pages: {page_count}"))  # Update page count label
-
-        self.setLayout(self.playout)
-
-    def update_preview(self, title, image_path):
-        self.title_label.setText(title)
-        pixmap = QPixmap(image_path)
-        pixmap = pixmap.scaled(150, 250, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
-        self.image_label.setPixmap(pixmap)
 
 class EbookManagerApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.init_ui()
         self.load_last_path()
-        self.preview_card = PreviewCard()
 
 
     def init_ui(self):
@@ -306,20 +273,23 @@ class EbookManagerApp(QMainWindow):
         self.title_label.setWordWrap(True)
 
         self.genre_label = QLabel("Genre")  # Set the title_label text to the provided title
-        self.title_label.setWordWrap(True)
+        self.genre_label.setWordWrap(True)
 
-        self.title_label = QLabel("Pages")  # Set the title_label text to the provided title
-        self.title_label.setWordWrap(True)
+        self.Pages_label = QLabel("Pages")  # Set the title_label text to the provided title
+        self.Pages_label.setWordWrap(True)
 
         self.image_label = QLabel()  # Create a QLabel for displaying the image
         self.image_label.setFixedWidth(280)
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
+        self.image_label.setFixedHeight(480)
+        self.pixmap = QPixmap("default.png")
+        self.pixmap = self.pixmap.scaled(280, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
+        self.image_label.setPixmap(self.pixmap)
+        
         self.playout.addWidget(self.image_label)
         self.playout.addWidget(self.title_label)
-        self.playout.addWidget(QLabel("Author"))  # Update author label
-        self.playout.addWidget(QLabel("Genre"))    # Update genre label
-        self.playout.addWidget(QLabel("Pages"))  # Update page count label
+        self.playout.addWidget(self.auther_label)  # Update author label
+        self.playout.addWidget(self.genre_label)    # Update genre label
+        self.playout.addWidget(self.Pages_label)  # Update page count label
 
         self.preview_layout = QVBoxLayout()
         self.preview_layout.addLayout(self.playout)
@@ -364,13 +334,34 @@ class EbookManagerApp(QMainWindow):
     def resizeEvent(self, event):
         self.available_width = event.size().width()
         print(self.available_width)
-        self.update_ebook_grid()
+        self.delayed_update_ebook_grid()  # Call the delayed update_ebook_grid method
         super().resizeEvent(event)
-        #self.grid_layout.setSpacing(10)
+
+    def delayed_update_ebook_grid(self):
+        # Create a QTimer with a single-shot connection
+        # The timer will call update_ebook_grid once the resize event is completed
+        if not hasattr(self, "timer"):
+            self.timer = QTimer(self)
+            self.timer.setSingleShot(True)
+            self.timer.timeout.connect(self.update_ebook_grid)
+
+        # Start or restart the timer
+        self.timer.start(500)
 
 
     def update_preview_card(self, title, image_path,ebook):
-        self.title_label.setText(title)
+        self.title_label.setText(ebook['title'])
+        self.auther_label.setText(ebook["author"])
+        self.genre_label.setText(ebook["genre"])
+        self.Pages_label.setText(ebook["page_count"])
+
+        if os.path.exists(image_path):
+            self.pixmap = QPixmap(image_path)
+        else:
+            # Load a default image if the image path is not valid
+            self.pixmap = QPixmap("default.png")
+        self.pixmap = self.pixmap.scaled(280, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
+        self.image_label.setPixmap(self.pixmap)
         
 
     def update_applied_filters(self):
