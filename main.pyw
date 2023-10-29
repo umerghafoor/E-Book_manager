@@ -3,11 +3,26 @@ import sys
 from PyQt6.QtCore import QUrl,Qt,QTimer
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QFileDialog, QVBoxLayout, QPushButton, QWidget, QLabel,QFrame,
-    QLineEdit, QDialog, QHBoxLayout, QSpinBox, QComboBox, QGridLayout, QScrollArea, QSizePolicy, QButtonGroup,
+    QLineEdit, QDialog, QHBoxLayout, QSpinBox, QComboBox, QGridLayout, QScrollArea, QButtonGroup,
 )
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap,QPainter,QPainterPath
 from PyQt6.QtGui import QDesktopServices
 import configparser
+
+class RoundedImageLabel(QLabel):
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
+        # Create a QPainterPath to define the rounded rectangle
+        path = QPainterPath()
+        rect = self.rect()
+        path.addRoundedRect(rect, 50, 50)  # Adjust the radius as needed
+        
+        # Use the QPainterPath as a clip path to make the label rounded
+        painter.setClipPath(path)
+        
+        super().paintEvent(event)
 
 
 class RenameDialog(QDialog):
@@ -63,10 +78,10 @@ class RenameDialog(QDialog):
         self.layout.addWidget(self.new_page_count_input)
         self.layout.addWidget(self.rename_button)
 
-class EbookCard(QFrame):  # Use QFrame as the outer container
+class EbookCard(QFrame):
     def __init__(self, title, author, genre, page_count, file_path, image_path, parent=None, app=None, ebook=None, grid_layout=None):
         super().__init__(parent)
-        self.app = app  # Store a reference to the main application
+        self.app = app
         self.file_path = file_path
         self.image_path = image_path
         self.title = title
@@ -74,60 +89,98 @@ class EbookCard(QFrame):  # Use QFrame as the outer container
         self.genre = genre
         self.page_count = page_count
         self.ebook = ebook
-        self.grid_layout = grid_layout  # Store a reference to the grid layout
+        self.grid_layout = grid_layout
+        self.selected = False
 
-        self.layout = QVBoxLayout(self)
+        # Create the main layout for the card
+        main_layout = QHBoxLayout(self)
 
+        # Create a layout for the image (on the left)
+        # Create a layout for the image (on the left)
+        image_layout = QVBoxLayout()
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setFixedWidth(80)
+        self.image_label.setStyleSheet("border-radius: 20px;") 
+        image_layout.addWidget(self.image_label)
+
+
+        # Create a layout for the text and button (on the right)
+        text_button_layout = QVBoxLayout()
         title_label = QLabel(f"{title}")
         title_label.setWordWrap(True)
+        title_label.setStyleSheet("QLabel { font-weight: bold; }")
+        title_label.setFixedWidth(180)
+        auther_label = QLabel(f"Author: {author}")
+        auther_label.setStyleSheet("QLabel { color: #2a3c4a; }")
 
-        self.image_label = QLabel()  # Create a QLabel for displaying the image
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center align the image
-        self.layout.addWidget(self.image_label)
-        self.layout.addWidget(title_label)
-        self.layout.addWidget(QLabel(f"Author : {author}"))
-        self.layout.addWidget(QLabel(f"Genre: {genre}"))
-        self.layout.addWidget(QLabel(f"Pages: {page_count}"))
+        text_button_layout.addWidget(title_label)
+        text_button_layout.addWidget(auther_label)
+        text_button_layout.addWidget(QLabel(f"Genre: {genre}"))
+        text_button_layout.addWidget(QLabel(f"Pages: {page_count}"))
+        text_button_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        text_button_layout.setSpacing(0)
+
+        # # "Rename" button
+        # self.rename_button = QPushButton("Rename")
+        # self.rename_button.clicked.connect(self.show_rename_dialog)
+        # text_button_layout.addWidget(self.rename_button)
+
+        # Add the image layout to the main layout
+        main_layout.addLayout(image_layout)
+
+        # Add the text and button layout to the main layout
+        main_layout.addLayout(text_button_layout)
+
+        main_layout.setSpacing(10)
 
         # Initialize pixmap to None
         self.pixmap = None
         self.magnified = None
 
-        self.load_image(image_path)  # Load the image during initialization
+        self.load_image(image_path)
 
-        
-        self.setFixedSize(150, 400)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-        
-        # "Rename" button
-        self.rename_button = QPushButton("Rename")
-        self.rename_button.clicked.connect(self.show_rename_dialog)
-        self.layout.addWidget(self.rename_button)
-
-        self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px;}")
+        self.setFixedSize(290, 130)
+        self.load_stylesheet("styles.css")
+        #self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def enterEvent(self, event):
-        if not self.magnified:
-            self.magnified = True
-            self.image_label.setPixmap(self.magnified_pixmap)
-            self.setFixedSize(155, 400)
-            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: blue;  }")
+        # if not self.magnified:
+            # self.magnified = True
+            # self.image_label.setPixmap(self.magnified_pixmap)
+            # self.setFixedSize(355, 400)
+        #self.app.update_preview_card(self.title, self.image_path,self.ebook)
+        self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: #bce0fd;  }")
 
     def leaveEvent(self, event):
-        if self.magnified:
-            self.magnified = False
-            self.image_label.setPixmap(self.pixmap)
-            self.setFixedSize(150, 400)
-            self.setStyleSheet("")
+        # if self.magnified:
+            # self.magnified = False
+            # self.image_label.setPixmap(self.pixmap)
+            # self.setFixedSize(350, 400)
+        if self.selected:
+            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: yellow; }")
+        else:
+            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; }")
+
+        #self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px;  }")
 
     def mouseDoubleClickEvent(self, event):
+        self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: green;  }")
         self.open_ebook()
     
+    def set_selected(self, selected):
+        self.selected = selected
+        if selected:
+            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: yellow; }")
+        else:
+            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; }")
+
     def mousePressEvent(self, event):
-        self.app.update_preview_card(self.title, self.image_path,self.ebook)
-        print("mousePressEvent")
-        #self.open_ebook()
+        if not self.selected:
+            self.set_selected(True)  # Select the card
+            self.app.update_preview_card(self.title, self.image_path,self.ebook)
+        else:
+            self.set_selected(False)  # Deselect the card
 
     def load_image(self, image_path):
         if os.path.exists(image_path):
@@ -135,12 +188,12 @@ class EbookCard(QFrame):  # Use QFrame as the outer container
         else:
             # Load a default image if the image path is not valid
             self.pixmap = QPixmap("default.png")
-        fixed_width = 150
+        fixed_width = 80
         fixed_height = 250
         if not self.pixmap.isNull():
             self.pixmap = self.pixmap.scaled(fixed_width, fixed_height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
             self.image_label.setPixmap(self.pixmap)
-            self.magnified_pixmap = self.pixmap.scaled(155, 200, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
+            self.magnified_pixmap = self.pixmap.scaled(95, 200, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
 
     def open_ebook(self):
         print(self.file_path)
@@ -175,13 +228,16 @@ class EbookCard(QFrame):  # Use QFrame as the outer container
             if os.path.exists(old_image_path):
                 os.rename(old_image_path, new_image_path)
 
+    def load_stylesheet(self, stylesheet_file):
+        # Load and apply the style sheet from the file
+        with open(stylesheet_file, "r") as file:
+            self.setStyleSheet(file.read())
 
 class EbookManagerApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.init_ui()
         self.load_last_path()
-
 
     def init_ui(self):
         self.setGeometry(100, 100, 1000, 600)
@@ -246,13 +302,13 @@ class EbookManagerApp(QMainWindow):
 
         self.scroll_widget = QWidget(self)
         self.grid_layout = QGridLayout(self.scroll_widget)
+        self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         #self.grid_layout.setSpacing(10)
         #self.grid_layout.setHorizontalSpacing(50)
         self.available_width = 0 
 
         self.scroll_area.setWidget(self.scroll_widget)
         # self.layout.addWidget(self.scroll_area)
-
 
         # Create a frame to hold the QScrollArea and the preview card
         self.scroll_and_preview_frame = QFrame()
@@ -279,7 +335,7 @@ class EbookManagerApp(QMainWindow):
         self.Pages_label.setWordWrap(True)
 
         self.image_label = QLabel()  # Create a QLabel for displaying the image
-        self.image_label.setFixedWidth(280)
+        # self.image_label.setFixedWidth(280)
         self.image_label.setFixedHeight(480)
         self.pixmap = QPixmap("default.png")
         self.pixmap = self.pixmap.scaled(280, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
@@ -298,6 +354,9 @@ class EbookManagerApp(QMainWindow):
         self.applied_filters = []
         self.ebook_group = QButtonGroup()
 
+        self.last_available_width = 0
+        self.load_stylesheet("styles.css")
+
     def update_ebook_grid(self, ebooks=None):
         if ebooks is None:
             ebooks = self.ebooks
@@ -305,8 +364,8 @@ class EbookManagerApp(QMainWindow):
         if self.available_width == 0:
             return
 
-        card_width = 250  # Desired card width
-        num_columns = max(1, self.available_width // card_width)
+        card_width = 290  # Desired card width
+        num_columns = max(1, (self.available_width-350) // card_width)
 
         # Clear the existing layout
         for i in reversed(range(self.grid_layout.count())):
@@ -318,11 +377,11 @@ class EbookManagerApp(QMainWindow):
         row = 0
 
         # Add vertical spacing between rows
-        #self.grid_layout.setVerticalSpacing(10)  # Adjust the spacing as needed
+        #self.grid_layout.setVerticalSpacing(10)
 
         for ebook in ebooks:
             card = EbookCard(ebook['title'], ebook['author'], ebook['genre'], ebook['page_count'], ebook['file_path'], ebook['image_path'],app=self,ebook=ebook)
-            self.grid_layout.addWidget(card, row, col,1,0)
+            self.grid_layout.addWidget(card, row, col,1,1)
             col += 1
             if col >= num_columns:
                 col = 0
@@ -333,21 +392,20 @@ class EbookManagerApp(QMainWindow):
 
     def resizeEvent(self, event):
         self.available_width = event.size().width()
-        print(self.available_width)
+        # print(self.available_width)
         self.delayed_update_ebook_grid()  # Call the delayed update_ebook_grid method
         super().resizeEvent(event)
 
     def delayed_update_ebook_grid(self):
-        # Create a QTimer with a single-shot connection
-        # The timer will call update_ebook_grid once the resize event is completed
         if not hasattr(self, "timer"):
             self.timer = QTimer(self)
             self.timer.setSingleShot(True)
             self.timer.timeout.connect(self.update_ebook_grid)
-
-        # Start or restart the timer
-        self.timer.start(500)
-
+        
+        # Only update the grid layout when the available width changes
+        if self.available_width != self.last_available_width:
+            self.timer.start(500)
+            self.last_available_width = self.available_width
 
     def update_preview_card(self, title, image_path,ebook):
         self.title_label.setText(ebook['title'])
@@ -362,7 +420,6 @@ class EbookManagerApp(QMainWindow):
             self.pixmap = QPixmap("default.png")
         self.pixmap = self.pixmap.scaled(280, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
         self.image_label.setPixmap(self.pixmap)
-        
 
     def update_applied_filters(self):
         tags = [f"#{tag}" for tag in self.applied_filters]
@@ -488,6 +545,11 @@ class EbookManagerApp(QMainWindow):
         self.update_applied_filters()
 
         self.update_ebook_grid(self.ebooks)
+
+    def load_stylesheet(self, stylesheet_file):
+        # Load and apply the style sheet from the file
+        with open(stylesheet_file, "r") as file:
+            self.setStyleSheet(file.read())
 
 def main():
     app = QApplication(sys.argv)

@@ -1,0 +1,317 @@
+/* Material Style Sheet for QT Applications
+    featues
+        - QpushButton
+        - QSlider
+        - QMenuBar
+        - QLineEdit
+        - QLabel
+        - QMainWindow
+        - QScrollBar
+
+*/
+
+
+
+
+/* Set white background for the entire application */
+* {
+    background-color: #e3f0fb;
+}
+
+/* Set rounded border for all elements */
+* {
+    border-radius: 8px;
+}
+
+/* Material Style Sheet for QT Applications (QpushButton) */
+QPushButton {
+    border: none;
+    color: #ffffff;
+    background-color: #2196F3;
+    font-size: 14px;
+    padding: 0px;
+}
+
+QPushButton::default {
+    color: #ffffff;
+    background-color: #2196F3;
+    padding: 0px;
+}
+
+QPushButton:hover {
+    color: #ffffff;
+    background-color: #1E88E5;
+}
+
+QPushButton:pressed {
+    color: #ffffff;
+    background-color: #1565C0;
+}
+
+/* Material Style Sheet for QT Applications (QSlider)
+fixes
+    height=32px must be fixed for horizental slider 
+    width=32px must be fixed for vertical slider 
+
+*/
+QSlider {
+    border: none;
+    background-color: #1565C0;
+    border-radius: 16px;
+}
+
+
+QSlider::groove:vertical,
+QSlider::groove:horizontal {
+    background-color: #a6d2f9;
+    border-radius: 16px;
+}
+
+
+QSlider::sub-page:vertical {
+    background-color: transparent;
+    border-radius: 16px;
+}
+
+QSlider::sub-page:horizontal {
+    background-color: #2196F3;
+    border-radius: 16px;
+}
+
+
+QSlider::add-page:vertical {
+    background-color: #2196F3;
+    border-radius: 16px;
+}
+
+QSlider::add-page:horizontal {
+    background-color: transparent;
+    border-radius: 16px;
+
+}
+
+QSlider::handle:vertical {
+    background-color: transparent;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    margin-bottom: 28px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+QSlider::handle:horizontal {
+    background-color: transparent;
+    width: 16px;
+    height: 16px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 28px;
+    margin-right: -6px;
+}
+
+
+QSlider::handle:horizontal:hover {
+    background-color: #79b7ee;
+    border-color: transparent;
+    outline: none;
+    border-radius: 8px;
+}
+
+QSlider::handle:vertical:hover {
+    background-color: #79b7ee;
+    border-color: transparent;
+    outline: none;
+    border-radius: 8px;
+}
+
+
+/* Material Style Sheet for QT Applications (QMainWindow) */
+QMainWindow {
+    border: none;
+    border-radius: 16px;
+    color: #e2f1ff;
+}
+
+QMainWindow::title {
+    background-color: #b9dbf7;
+    color: #ffffff;
+    padding: 6px;
+}
+
+QMainWindow::separator {
+    background-color: #ffffff;
+    width: 1px;
+    height: 1px;
+}
+
+QMainWindow::separator:hover {
+    background-color: #ffffff;
+}
+
+QMainWindow::separator:horizontal {
+    width: 1px;
+}
+
+QMainWindow::separator:horizontal QMainWindow::separator:vertical {
+    height: 1px;
+}
+
+QMainWindow::dockWidgetSeparator {
+    background-color: #ffffff;
+    width: 1px;
+    height: 1px;
+}
+
+QMainWindow::dockWidgetSeparator:hover {
+    background-color: #ffffff;
+}
+
+QMainWindow::dockWidgetSeparator:horizontal {
+    width: 1px;
+}
+
+QMainWindow::dockWidgetSeparator:vertical {
+    height: 1px;
+}
+
+/* Material Style Sheet for QT Applications (QLabel) */
+QLabel {
+    color: #131f29;
+    background-color: transparent;
+    font-size: 12px;
+    padding: 0px;
+}
+
+QLabel::hover {
+    color: #052641;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+QLabel::selected {
+    background-color: #ffffff;
+}
+
+QLabel::disabled {
+    color: #808080;
+}
+
+/* Material Style Sheet for QT Applications (QLineEdit) */
+QLineEdit {
+    color: #a6d2f9;
+    background-color: #f7fbff;
+    font-size: 14px;
+    padding: 6px;
+}
+
+QLineEdit::hover {
+    color: #2196F3;
+    background-color: #79b7ee;
+}
+
+QLineEdit::focus {
+    color: #2196F3;
+    background-color: #f7fbff;
+    border: 1px solid #2196F3;
+    border-width: 2px;
+}
+
+QLineEdit::disabled {
+    color: #808080;
+    background-color: #2196F3;
+}
+
+/* Material Style Sheet for QT Applications (QMenuBar) */
+QMenuBar {
+    background-color: #2196F3;
+    color: #ffffff;
+    border: none;
+    padding: 2px;
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 8px;
+}
+
+QMenuBar::item:selected {
+    background-color: #2196F3;
+}
+
+
+QMenu {
+    background-color: #2196F3;
+    color: #ffffff;
+    border: none;
+    margin: 2px;
+    padding: 4px;
+}
+
+QMenu::item {
+    background-color: transparent;
+    padding: 4px 20px 4px 20px;
+}
+
+QMenu::item:selected {
+    background-color: #ffffff;
+    color: #2196F3;
+}
+
+QMenu::item:hover {
+    background-color: #ffffff;
+    color: #2196F3;
+}
+
+/* Material Style Sheet for QT Applications (QScrollBar) */
+
+
+QScrollBar {
+    background-color: #FFFFFF;
+    border-radius: 6px;
+    margin-right: 5px;
+}
+
+QScrollBar::handle {
+    background-color: #4DA6FF;
+    border-radius: 6px;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    height: 0px;
+    border-radius: 4px;
+}
+
+/* Material Style Sheet for QT Applications (QTableWidget) */
+
+QTableWidget::item {
+    background-color: white;
+    border-radius: 10px;
+}
+
+QTableWidget::item:selected {
+    background-color: #4DA6FF;
+    color: white;
+}
+
+QTableWidget::item:selected:focus {
+    outline: none;
+}
+
+QTableWidget::item:selected:active {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+QTableWidget::item:selected:first {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+QTableWidget::item:selected:last {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
