@@ -1,0 +1,65 @@
+/* Add this CSS in a separate .qss file and specify the path in apply_stylesheet() function. */
+
+/* Basic Styles */
+QWidget {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+QPushButton {
+    background-color: #2196F3; /* Material Blue */
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 10px;
+}
+
+QPushButton:hover {
+    background-color: #1976D2; /* Slightly darker blue on hover */
+}
+
+QLineEdit {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 5px;
+}
+
+/* List Widget Styles */
+QListWidget {
+    background-color: white;
+    border: 1px solid #ccc;
+}
+
+QListWidget::item {
+    padding: 5px;
+}
+
+QListWidget::item:selected {
+    background-color: #1976D2;
+    color: white;
+}
+
+/* Dialog Styles */
+QDialog {
+    background-color: white;
+}
+
+/* Label Styles */
+QLabel {
+    font-size: 14px;
+}
+
+/* ComboBox Styles */
+QComboBox {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 5px;
+}
+
+/* ComboBox Dropdown Styles */
+QComboBox QAbstractItemView {
+    background-color: white;
+    border: 1px solid #ccc;
+}
+
+/* Adjust any other styles you want here */

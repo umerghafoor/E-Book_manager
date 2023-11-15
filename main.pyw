@@ -288,6 +288,14 @@ class EbookManagerApp(QMainWindow):
         self.filter_line_layout.addWidget(self.filter_button)
         self.filter_line_layout.addWidget(self.clear_filters_button)
         self.filter_line_layout.addWidget(self.load_button)
+        
+        self.sort_combo = QComboBox()
+        self.sort_combo.addItem("Sort by Name (A-Z)")
+        self.sort_combo.addItem("Sort by Author (A-Z)")
+        self.sort_combo.addItem("Sort by Pages (Low to High)")
+        self.sort_combo.addItem("Sort by Genre (A-Z)")
+        self.sort_combo.currentIndexChanged.connect(self.sort_ebooks)
+        self.filter_line_layout.addWidget(self.sort_combo)
 
         self.filter_layout.addLayout(self.filter_line_layout)
         self.filter_tags_layout = QHBoxLayout()
@@ -356,11 +364,14 @@ class EbookManagerApp(QMainWindow):
 
         self.last_available_width = 0
         self.load_stylesheet("styles.css")
-
+        
     def update_ebook_grid(self, ebooks=None):
+        
         if ebooks is None:
             ebooks = self.ebooks
 
+        self.sort_ebooks()
+        
         if self.available_width == 0:
             return
 
@@ -390,6 +401,19 @@ class EbookManagerApp(QMainWindow):
         for i in range(num_columns):
             self.grid_layout.setColumnStretch(i, 1)
 
+    def sort_ebooks(self):
+        selected_sort_option = self.sort_combo.currentText()
+
+        if selected_sort_option == "Sort by Name (A-Z)":
+            self.ebooks.sort(key=lambda ebook: ebook["title"])
+        elif selected_sort_option == "Sort by Author (A-Z)":
+            self.ebooks.sort(key=lambda ebook: ebook["author"])
+        elif selected_sort_option == "Sort by Pages (Low to High)":
+            self.ebooks.sort(key=lambda ebook: int(ebook["page_count"]))
+        elif selected_sort_option == "Sort by Genre (A-Z)":
+            self.ebooks.sort(key=lambda ebook: ebook["genre"])
+
+       
     def resizeEvent(self, event):
         self.available_width = event.size().width()
         # print(self.available_width)
@@ -433,6 +457,8 @@ class EbookManagerApp(QMainWindow):
             if os.path.isdir(last_path):
                 self.ebooks = self.scan_folder_for_ebooks(last_path)
                 self.update_ebook_grid()
+        else:
+            self.ebooks = []
 
     def save_last_path(self, path):
         config = configparser.ConfigParser()

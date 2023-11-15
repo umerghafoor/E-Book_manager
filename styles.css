@@ -184,7 +184,7 @@ QLabel {
 }
 
 QLabel::hover {
-    color: #052641;
+    color: #2a3c4a;
     font-size: 20px;
     font-weight: bold;
 }
