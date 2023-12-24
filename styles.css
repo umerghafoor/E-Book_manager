@@ -1,0 +1,439 @@
+/* Material Style Sheet for QT Applications
+    featues
+        - QpushButton
+        - QSlider
+        - QMenuBar
+        - QLineEdit
+        - QLabel
+        - QMainWindow
+        - QScrollBar
+
+*/
+
+
+
+
+/* Set rounded border for all elements */
+* {
+    font-size: 16px;
+    font-weight: 600;
+    background-color: #e7f2fc;
+    border-radius: 8px;
+}
+
+/* Material Style Sheet for QT Applications (QpushButton) */
+QPushButton {
+    border: none;
+    color: #ffffff;
+    background-color: #2196F3;
+    border-radius: 14%;
+    padding-top: 2px;
+    padding-bottom: 4px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+
+QPushButton:hover {
+    color: #ffffff;
+    background-color: #006ccb;
+}
+
+QPushButton:pressed {
+    color: #ffffff;
+    background-color: #05346a;
+}
+
+/* Material Style Sheet for QT Applications (QSlider)
+fixes
+    height=32px must be fixed for horizental slider 
+    width=32px must be fixed for vertical slider 
+
+*/
+QSlider {
+    border: none;
+    background-color: #1565C0;
+    border-radius: 16px;
+}
+
+
+QSlider::groove:vertical,
+QSlider::groove:horizontal {
+    background-color: #a6d2f9;
+    border-radius: 16px;
+}
+
+
+QSlider::sub-page:vertical {
+    background-color: transparent;
+    border-radius: 16px;
+}
+
+QSlider::sub-page:horizontal {
+    background-color: #2196F3;
+    border-radius: 16px;
+}
+
+
+QSlider::add-page:vertical {
+    background-color: #2196F3;
+    border-radius: 16px;
+}
+
+QSlider::add-page:horizontal {
+    background-color: transparent;
+    border-radius: 16px;
+
+}
+
+QSlider::handle:vertical {
+    background-color: transparent;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    margin-bottom: 28px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+QSlider::handle:horizontal {
+    background-color: transparent;
+    width: 16px;
+    height: 16px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 28px;
+    margin-right: -6px;
+}
+
+
+QSlider::handle:horizontal:hover {
+    background-color: #79b7ee;
+    border-color: transparent;
+    outline: none;
+    border-radius: 8px;
+}
+
+QSlider::handle:vertical:hover {
+    background-color: #79b7ee;
+    border-color: transparent;
+    outline: none;
+    border-radius: 8px;
+}
+
+
+/* Material Style Sheet for QT Applications (QMainWindow) */
+QMainWindow {
+    border: none;
+    border-radius: 16px;
+    color: #f2f7fb;
+}
+
+QMainWindow::title {
+    background-color: #eaf2f8;
+    color: #ffffff;
+    padding: 6px;
+}
+
+QMainWindow::separator {
+    background-color: #ffffff;
+    width: 1px;
+    height: 1px;
+}
+
+QMainWindow::separator:hover {
+    background-color: #ffffff;
+}
+
+QMainWindow::separator:horizontal {
+    width: 1px;
+}
+
+QMainWindow::separator:horizontal QMainWindow::separator:vertical {
+    height: 1px;
+}
+
+QMainWindow::dockWidgetSeparator {
+    background-color: #ffffff;
+    width: 1px;
+    height: 1px;
+}
+
+QMainWindow::dockWidgetSeparator:hover {
+    background-color: #ffffff;
+}
+
+QMainWindow::dockWidgetSeparator:horizontal {
+    width: 1px;
+}
+
+QMainWindow::dockWidgetSeparator:vertical {
+    height: 1px;
+}
+
+/* Material Style Sheet for QT Applications (QLabel) */
+QLabel {
+    color: #131f29;
+    background-color: transparent;
+
+    font-weight: 600;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+
+}
+
+QLabel::hover {
+    color: #2a3c4a;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+QLabel::selected {
+    background-color: #ffffff;
+}
+
+QLabel::disabled {
+    color: #808080;
+}
+
+/* Material Style Sheet for QT Applications (QLineEdit) */
+QLineEdit {
+    color: #a6d2f9;
+    background-color: #f7fbff;
+    font-size: 14px;
+    padding: 6px;
+    border-radius: 14%;
+}
+
+QLineEdit::hover {
+    color: #2196F3;
+    background-color: #79b7ee;
+    
+}
+
+QLineEdit::focus {
+    color: #2196F3;
+    background-color: #ffffff;
+    border: none;
+    border-width: 2px;
+}
+
+QLineEdit::disabled {
+    color: #808080;
+    background-color: #2196F3;
+}
+
+/* Material Style Sheet for QT Applications (QMenuBar) */
+QMenuBar {
+    background-color: #2196F3;
+    color: #ffffff;
+    border: none;
+    padding: 2px;
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 4px 8px;
+}
+
+QMenuBar::item:selected {
+    background-color: #2196F3;
+}
+
+
+QMenu {
+    background-color: #2196F3;
+    color: #ffffff;
+    border: none;
+    margin: 2px;
+    padding: 4px;
+}
+
+QMenu::item {
+    background-color: transparent;
+    padding: 4px 20px 4px 20px;
+}
+
+QMenu::item:selected {
+    background-color: #ffffff;
+    color: #2196F3;
+}
+
+QMenu::item:hover {
+    background-color: #ffffff;
+    color: #2196F3;
+}
+
+/* Material Style Sheet for QT Applications (QScrollBar) */
+
+
+QScrollBar {
+    background-color: #FFFFFF;
+    border-radius: 6px;
+    margin-right: 5px;
+}
+
+QScrollBar::handle {
+    background-color: #4DA6FF;
+    border-radius: 6px;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    height: 0px;
+    border-radius: 4px;
+}
+
+/* Material Style Sheet for QT Applications (QTableWidget) */
+
+QTableWidget::item {
+    background-color: white;
+    border-radius: 10px;
+}
+
+QTableWidget::item:selected {
+    background-color: #4DA6FF;
+    color: white;
+}
+
+QTableWidget::item:selected:focus {
+    outline: none;
+}
+
+QTableWidget::item:selected:active {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+QTableWidget::item:selected:first {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+QTableWidget::item:selected:last {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+/* The CSS code you provided is styling the QComboBox widget in a QT application. Here is a breakdown
+of what each part of the code does: */
+
+
+QComboBox {
+    border: none;
+    background: #2196F3;
+    color: white;
+    border-radius: 14%;
+    padding: 2px 0px;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:on {
+    padding: 2px 0px;
+}
+
+QComboBox::drop-down {
+    width: 30px;
+    height: 20px;
+    
+    background: transparent;
+    border-radius: 50%;
+    subcontrol-origin: padding;
+    subcontrol-position: left center;
+    border: none;
+}
+
+QComboBox::down-arrow {
+    image: url(down-arrow.png);
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+}
+
+QComboBox::down-arrow:on {
+    image: url(down-up.png);
+}
+
+QComboBox QAbstractItemView {
+    background: rgb(255, 255, 255);
+    border-radius: 8px;
+    border: 1px solid #2196F3;
+    selection-background-color: #2196F3;
+    padding: 2px, 8px;
+}
+
+
+/* The CSS code you provided is styling the QSpinBox widget in a QT application. Here is a breakdown
+of what each part of the code does: */
+
+
+QSpinBox {
+    border: none;
+    background: transparent;
+    color: #2196F3;
+    border-radius: 13%;
+    padding: 2px 0px;
+}
+
+QSpinBox:editable {
+    background: white;
+}
+
+QSpinBox:on {
+    padding: 2px 0px;
+}
+
+QSpinBox::up-button
+{
+    image: url(plus.png);
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+    
+    background: transparent;
+    border-radius: 50%;
+    subcontrol-origin: padding;
+    subcontrol-position: right center;
+    border: none;
+}
+QSpinBox::down-button {
+    
+    image: url(minus.png);
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+    
+    background: transparent;
+    border-radius: 50%;
+    subcontrol-origin: padding;
+    subcontrol-position: left center;
+    border: none;
+}
+
+QSpinBox::up-arrow,
+QSpinBox::down-arrow {
+    image: url(minus.png);
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+}
+
+QSpinBox::up-arrow:on,
+QSpinBox::down-arrow:on {
+    image: url(up-down-arrow.png);
+}
+
+QSpinBox QAbstractSpinBox {
+    background: rgb(255, 255, 255);
+    border-radius: 8px;
+    border: 1px solid #2196F3;
+    selection-background-color: #2196F3;
+    padding: 2px, 8px;
+}
