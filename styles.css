@@ -13,13 +13,11 @@
 
 
 
-/* Set white background for the entire application */
-* {
-    background-color: #e3f0fb;
-}
-
 /* Set rounded border for all elements */
 * {
+    font-size: 16px;
+    font-weight: 600;
+    background-color: #e7f2fc;
     border-radius: 8px;
 }
 
@@ -28,24 +26,22 @@ QPushButton {
     border: none;
     color: #ffffff;
     background-color: #2196F3;
-    font-size: 14px;
-    padding: 0px;
+    border-radius: 14%;
+    padding-top: 2px;
+    padding-bottom: 4px;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
-QPushButton::default {
-    color: #ffffff;
-    background-color: #2196F3;
-    padding: 0px;
-}
 
 QPushButton:hover {
     color: #ffffff;
-    background-color: #1E88E5;
+    background-color: #006ccb;
 }
 
 QPushButton:pressed {
     color: #ffffff;
-    background-color: #1565C0;
+    background-color: #05346a;
 }
 
 /* Material Style Sheet for QT Applications (QSlider)
@@ -130,11 +126,11 @@ QSlider::handle:vertical:hover {
 QMainWindow {
     border: none;
     border-radius: 16px;
-    color: #e2f1ff;
+    color: #f2f7fb;
 }
 
 QMainWindow::title {
-    background-color: #b9dbf7;
+    background-color: #eaf2f8;
     color: #ffffff;
     padding: 6px;
 }
@@ -179,8 +175,13 @@ QMainWindow::dockWidgetSeparator:vertical {
 QLabel {
     color: #131f29;
     background-color: transparent;
-    font-size: 12px;
-    padding: 0px;
+
+    font-weight: 600;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+
 }
 
 QLabel::hover {
@@ -203,17 +204,19 @@ QLineEdit {
     background-color: #f7fbff;
     font-size: 14px;
     padding: 6px;
+    border-radius: 14%;
 }
 
 QLineEdit::hover {
     color: #2196F3;
     background-color: #79b7ee;
+    
 }
 
 QLineEdit::focus {
     color: #2196F3;
-    background-color: #f7fbff;
-    border: 1px solid #2196F3;
+    background-color: #ffffff;
+    border: none;
     border-width: 2px;
 }
 
@@ -314,4 +317,123 @@ QTableWidget::item:selected:first {
 QTableWidget::item:selected:last {
     border-top-right-radius: 12px;
     border-bottom-right-radius: 12px;
+}
+
+/* The CSS code you provided is styling the QComboBox widget in a QT application. Here is a breakdown
+of what each part of the code does: */
+
+
+QComboBox {
+    border: none;
+    background: #2196F3;
+    color: white;
+    border-radius: 14%;
+    padding: 2px 0px;
+}
+
+QComboBox:editable {
+    background: white;
+}
+
+QComboBox:on {
+    padding: 2px 0px;
+}
+
+QComboBox::drop-down {
+    width: 30px;
+    height: 20px;
+    
+    background: transparent;
+    border-radius: 50%;
+    subcontrol-origin: padding;
+    subcontrol-position: left center;
+    border: none;
+}
+
+QComboBox::down-arrow {
+    image: url(down-arrow.png);
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+}
+
+QComboBox::down-arrow:on {
+    image: url(down-up.png);
+}
+
+QComboBox QAbstractItemView {
+    background: rgb(255, 255, 255);
+    border-radius: 8px;
+    border: 1px solid #2196F3;
+    selection-background-color: #2196F3;
+    padding: 2px, 8px;
+}
+
+
+/* The CSS code you provided is styling the QSpinBox widget in a QT application. Here is a breakdown
+of what each part of the code does: */
+
+
+QSpinBox {
+    border: none;
+    background: transparent;
+    color: #2196F3;
+    border-radius: 13%;
+    padding: 2px 0px;
+}
+
+QSpinBox:editable {
+    background: white;
+}
+
+QSpinBox:on {
+    padding: 2px 0px;
+}
+
+QSpinBox::up-button
+{
+    image: url(plus.png);
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+    
+    background: transparent;
+    border-radius: 50%;
+    subcontrol-origin: padding;
+    subcontrol-position: right center;
+    border: none;
+}
+QSpinBox::down-button {
+    
+    image: url(minus.png);
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+    
+    background: transparent;
+    border-radius: 50%;
+    subcontrol-origin: padding;
+    subcontrol-position: left center;
+    border: none;
+}
+
+QSpinBox::up-arrow,
+QSpinBox::down-arrow {
+    image: url(minus.png);
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+}
+
+QSpinBox::up-arrow:on,
+QSpinBox::down-arrow:on {
+    image: url(up-down-arrow.png);
+}
+
+QSpinBox QAbstractSpinBox {
+    background: rgb(255, 255, 255);
+    border-radius: 8px;
+    border: 1px solid #2196F3;
+    selection-background-color: #2196F3;
+    padding: 2px, 8px;
 }

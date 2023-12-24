@@ -1,13 +1,18 @@
 import os
+import shutil
 import sys
-from PyQt6.QtCore import QUrl,Qt,QTimer
+from PyQt6.QtCore import QUrl,Qt,QTimer,QSize
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QFileDialog, QVBoxLayout, QPushButton, QWidget, QLabel,QFrame,
     QLineEdit, QDialog, QHBoxLayout, QSpinBox, QComboBox, QGridLayout, QScrollArea, QButtonGroup,
 )
 from PyQt6.QtGui import QPixmap,QPainter,QPainterPath
-from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtGui import QDesktopServices, QIcon
+from PyQt6.QtWidgets import QAbstractSpinBox
+
 import configparser
+from PIL import Image, ImageOps, ImageDraw
+
 
 class RoundedImageLabel(QLabel):
     def paintEvent(self, event):
@@ -25,58 +30,117 @@ class RoundedImageLabel(QLabel):
         super().paintEvent(event)
 
 
-class RenameDialog(QDialog):
-    def __init__(self, old_title, old_author, old_genre, old_page_count, parent=None):
+class RenameFileDialog(QDialog):
+    def __init__(self, old_filename, old_title,old_author,old_genre,old_page_count,parent=None):
         super().__init__(parent)
+
         self.setWindowTitle("Rename E-book")
         self.setModal(True)
 
         self.layout = QVBoxLayout(self)
 
-        self.old_title_label = QLabel(f"Old Title: {old_title}")
-        self.new_title_label = QLabel("New Title:")
-        self.new_title_input = QLineEdit(old_title)
-        self.old_author_label = QLabel(f"Old Author: {old_author}")
-        self.new_author_label = QLabel("New Author:")
+        self.new_name_label = QLabel("Name:")
+        self.new_name_input = QLineEdit(old_title)
+
+        self.new_author_label = QLabel("Author:")
         self.new_author_input = QLineEdit(old_author)
-        self.old_genre_label = QLabel(f"Old Genre: {old_genre}")
-        self.new_genre_label = QLabel("New Genre:")
+
+        self.new_genre_label = QLabel("Genre:")
         self.new_genre_combo = QComboBox()
-        self.new_genre_combo.addItem("Art & Design")
-        self.new_genre_combo.addItem("Biography")
-        self.new_genre_combo.addItem("Engineering")
-        self.new_genre_combo.addItem("History")
-        self.new_genre_combo.addItem("Novels")
-        self.new_genre_combo.addItem("Papers")
-        self.new_genre_combo.addItem("Biography")
-        self.new_genre_combo.addItem("Poetry")
-        self.new_genre_combo.addItem("Religious")
-        self.new_genre_combo.addItem("Science")
-        self.new_genre_combo.addItem("Self Motivation")
-        self.new_genre_combo.addItem("Other")
-        self.old_page_count_label = QLabel(f"Old Page Count: {old_page_count}")
-        self.new_page_count_label = QLabel("New Page Count:")
-        self.new_page_count_input = QSpinBox()
-        self.new_page_count_input.setMinimum(1)
-        self.new_page_count_input.setMaximum(10000)
-        self.new_page_count_input.setValue(int(old_page_count))
+        self.new_genre_combo.setPlaceholderText(old_genre)
+
+        genres = [
+            "Art & Design",
+            "Biography",
+            "Engineering",
+            "History",
+            "Novels",
+            "Papers",
+            "Poetry",
+            "Religious",
+            "Science",
+            "Self Motivation",
+            "Other"
+        ]
+
+        self.new_genre_combo.addItems(genres)
+
+        self.new_pages_label = QLabel("Pages:")
+        self.new_pages_input = QLineEdit(old_page_count)
 
         self.rename_button = QPushButton("Rename")
         self.rename_button.clicked.connect(self.accept)
 
-        self.layout.addWidget(self.old_title_label)
-        self.layout.addWidget(self.new_title_label)
-        self.layout.addWidget(self.new_title_input)
-        self.layout.addWidget(self.old_author_label)
+        self.image_path_label = QLabel("Image Path:")
+        self.image_path_input = QLineEdit()
+        self.image_path_button = QPushButton("Browse Image")
+        self.image_path_button.clicked.connect(self.select_image)
+
+        self.paste_image_button = QPushButton("Paste from Clipboard")
+        self.paste_image_button.clicked.connect(self.paste_image)
+
+        self.layout.addWidget(self.new_name_label)
+        self.layout.addWidget(self.new_name_input)
         self.layout.addWidget(self.new_author_label)
         self.layout.addWidget(self.new_author_input)
-        self.layout.addWidget(self.old_genre_label)
         self.layout.addWidget(self.new_genre_label)
         self.layout.addWidget(self.new_genre_combo)
-        self.layout.addWidget(self.old_page_count_label)
-        self.layout.addWidget(self.new_page_count_label)
-        self.layout.addWidget(self.new_page_count_input)
+        self.layout.addWidget(self.new_pages_label)
+        self.layout.addWidget(self.new_pages_input)
+        self.layout.addWidget(self.image_path_label)
+        self.layout.addWidget(self.image_path_input)
+        self.layout.addWidget(self.image_path_button)
+        self.layout.addWidget(self.paste_image_button)
         self.layout.addWidget(self.rename_button)
+
+        self.load_stylesheet("styles.css")
+
+    
+    def select_image(self):
+        image_path, _ = QFileDialog.getOpenFileName(self, "Select Image File", filter="Image Files (*.png)")
+        if image_path:
+            self.image_path_input.setText(image_path)
+
+    def paste_image(self):
+        clipboard = QApplication.clipboard()
+        image = clipboard.image()
+        if not image.isNull():
+            # Save the image to a temporary file and set the file path
+            temp_image_path = "temp_image.png"
+            image.save(temp_image_path, "PNG")
+
+            # Crop the image to rounded edges
+            self.crop_to_a4_ratio(temp_image_path)
+            self.image_path_input.setText(temp_image_path)
+        else:
+            self.image_path_input.setText("default.png")
+
+    def crop_to_a4_ratio(self, image_path):
+        with Image.open(image_path) as img:
+            img_width, img_height = img.size
+            img_aspect_ratio = img_width / img_height
+            if img_aspect_ratio < 1.41:
+                new_width = img_height / 1.41
+                crop_width = new_width
+                crop_height = img_height
+            else:
+                new_height = img_width * 1.41
+                crop_width = img_width
+                crop_height = new_height
+
+
+            mask = Image.new("L", (int(crop_width), int(crop_height)), 0)
+            draw = ImageDraw.Draw(mask)
+            draw.rounded_rectangle((0, 0, crop_width, crop_height), radius=80, fill=255)
+
+            result = ImageOps.fit(img, (int(crop_width), int(crop_height)), centering=(0.5, 0.5))
+            result.putalpha(mask)
+
+            result.save(image_path)
+    def load_stylesheet(self, stylesheet_file):
+       with open(stylesheet_file, "r") as file:
+            self.setStyleSheet(file.read())
+
 
 class EbookCard(QFrame):
     def __init__(self, title, author, genre, page_count, file_path, image_path, parent=None, app=None, ebook=None, grid_layout=None):
@@ -96,7 +160,6 @@ class EbookCard(QFrame):
         main_layout = QHBoxLayout(self)
 
         # Create a layout for the image (on the left)
-        # Create a layout for the image (on the left)
         image_layout = QVBoxLayout()
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -104,13 +167,13 @@ class EbookCard(QFrame):
         self.image_label.setStyleSheet("border-radius: 20px;") 
         image_layout.addWidget(self.image_label)
 
-
         # Create a layout for the text and button (on the right)
         text_button_layout = QVBoxLayout()
         title_label = QLabel(f"{title}")
         title_label.setWordWrap(True)
         title_label.setStyleSheet("QLabel { font-weight: bold; }")
         title_label.setFixedWidth(180)
+        title_label.setFixedHeight(50)
         auther_label = QLabel(f"Author: {author}")
         auther_label.setStyleSheet("QLabel { color: #2a3c4a; }")
 
@@ -121,10 +184,11 @@ class EbookCard(QFrame):
         text_button_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         text_button_layout.setSpacing(0)
 
-        # # "Rename" button
-        # self.rename_button = QPushButton("Rename")
-        # self.rename_button.clicked.connect(self.show_rename_dialog)
-        # text_button_layout.addWidget(self.rename_button)
+        # "Rename" button
+        self.rename_button = QPushButton("Rename")
+        self.rename_button.setFixedWidth(80)
+        self.rename_button.clicked.connect(self.show_rename_dialog)
+        text_button_layout.addWidget(self.rename_button)
 
         # Add the image layout to the main layout
         main_layout.addLayout(image_layout)
@@ -140,40 +204,33 @@ class EbookCard(QFrame):
 
         self.load_image(image_path)
 
-        self.setFixedSize(290, 130)
-        self.load_stylesheet("styles.css")
+        self.setFixedSize(290, 160)
+        self.load_stylesheet("cardstyles.css")
         #self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def enterEvent(self, event):
-        # if not self.magnified:
-            # self.magnified = True
-            # self.image_label.setPixmap(self.magnified_pixmap)
-            # self.setFixedSize(355, 400)
-        #self.app.update_preview_card(self.title, self.image_path,self.ebook)
-        self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: #bce0fd;  }")
+        self.setProperty("hoverState", True)
+        self.style().unpolish(self)
+        self.style().polish(self)
 
     def leaveEvent(self, event):
-        # if self.magnified:
-            # self.magnified = False
-            # self.image_label.setPixmap(self.pixmap)
-            # self.setFixedSize(350, 400)
-        if self.selected:
-            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: yellow; }")
-        else:
-            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; }")
-
-        #self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px;  }")
+        self.setProperty("hoverState", False)
+        self.style().unpolish(self)
+        self.style().polish(self)
 
     def mouseDoubleClickEvent(self, event):
-        self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: green;  }")
+        self.setProperty("OpenState", False)
+        self.style().unpolish(self)
+        self.style().polish(self)
+
         self.open_ebook()
     
     def set_selected(self, selected):
         self.selected = selected
-        if selected:
-            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: yellow; }")
-        else:
-            self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; }")
+        # if selected:
+        #     self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; background-color: #44a8fe; }")
+        # else:
+        #     self.setStyleSheet("QFrame { border: 0px solid #000; border-radius: 20px; }")
 
     def mousePressEvent(self, event):
         if not self.selected:
@@ -205,27 +262,31 @@ class EbookCard(QFrame):
         old_genre = self.genre
         old_page_count = self.page_count
 
-        dialog = RenameDialog(old_title, old_author, old_genre, old_page_count)
+        dialog = RenameFileDialog(self.file_path,old_title,old_author,old_genre,old_page_count)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            new_title = dialog.new_title_input.text()
+            new_title = dialog.new_name_input.text()
             new_author = dialog.new_author_input.text()
             new_genre = dialog.new_genre_combo.currentText()
-            new_page_count = dialog.new_page_count_input.value()
+            new_page_count = dialog.new_pages_input.text()
+            image_path = dialog.image_path_input.text()
 
             old_file_path = self.file_path
-            old_image_path = os.path.splitext(old_file_path)[0] + ".png"  # Use .png as the extension for image files
+            old_image_path = os.path.splitext(old_file_path)[0] + ".png"
             file_extension = os.path.splitext(old_file_path)[1]
             new_file_name = f"{new_title}+{new_author}+{new_genre}+{new_page_count}{file_extension}"
             new_file_path = os.path.join(os.path.dirname(old_file_path), new_file_name)
-            new_image_name = f"{new_title}+{new_author}+{new_genre}+{new_page_count}.png"  # Use .png extension for images
+            new_image_name = f"{new_title}+{new_author}+{new_genre}+{new_page_count}.png" 
             new_image_path = os.path.join(os.path.dirname(old_image_path), new_image_name)
 
-            print(new_image_path)
             print(new_file_path)
+            print(new_image_path)
 
-            os.rename(old_file_path, new_file_path)
+            if os.path.exists(old_file_path):
+                os.rename(old_file_path, new_file_path)
 
-            if os.path.exists(old_image_path):
+            if os.path.exists(image_path):
+                shutil.copy(image_path, new_image_path)
+            elif os.path.exists(old_image_path):
                 os.rename(old_image_path, new_image_path)
 
     def load_stylesheet(self, stylesheet_file):
@@ -249,45 +310,66 @@ class EbookManagerApp(QMainWindow):
         self.layout = QVBoxLayout(self.central_widget)
 
         self.filter_layout = QVBoxLayout()
-        self.filter_line_layout = QHBoxLayout()
-        self.filter_label = QLabel("Filter by:")
+        self.filter_line_layout = QVBoxLayout()
         self.filter_name_input = QLineEdit()
+        self.filter_name_input.setFixedWidth(280)
+        self.filter_name_input.setPlaceholderText("Filter by Name")
         self.filter_author_input = QLineEdit()
+        self.filter_author_input.setFixedWidth(280)
+        self.filter_author_input.setPlaceholderText("Filter by Author")
         self.filter_genre_combobox = QComboBox()
+        self.filter_genre_combobox.setFixedWidth(280)
         self.filter_genre_combobox.addItem("All Genres")
         self.filter_genre_combobox.addItems([
             "Art & Design", "Biography", "Engineering", "History", "Novels", "Papers",
             "Poetry", "Religious", "Science", "Self Motivation", "Other"
         ])
-        self.filter_page_count_greater_label = QLabel("Page Count >=")
+        # self.filter_page_count_greater_label = QLabel("Page Count >=")
         self.filter_page_count_greater_input = QSpinBox()
         self.filter_page_count_greater_input.setMinimum(1)
         self.filter_page_count_greater_input.setMaximum(10000)
-        self.filter_page_count_smaller_label = QLabel("Page Count <=")
+        self.filter_page_count_greater_input.setFixedWidth(100)
+        self.filter_page_count_greater_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.filter_page_count_greater_input.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
+
+        self.filter_page_count_smaller_label = QLabel("Page")
+        self.filter_page_count_smaller_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self.filter_page_count_smaller_input = QSpinBox()
         self.filter_page_count_smaller_input.setMinimum(1)
         self.filter_page_count_smaller_input.setMaximum(10000)
-        self.filter_page_count_smaller_input.setValue(10000)
+        self.filter_page_count_smaller_input.setValue(1000)
+        self.filter_page_count_smaller_input.setFixedWidth(100)
+        self.filter_page_count_smaller_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.filter_page_count_smaller_input.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
+        
         self.filter_button = QPushButton("Filter")
+        self.filter_button.setIcon(QIcon("filter.png"))
+        self.filter_button.setIconSize(QSize(22, 22))
         self.filter_button.clicked.connect(self.apply_filter)
 
-        self.clear_filters_button = QPushButton("Clear Filters")
+        self.clear_filters_button = QPushButton("Clear")
+        self.clear_filters_button.setIcon(QIcon("clear-filter.png"))
         self.clear_filters_button.clicked.connect(self.clear_filters)
 
-        self.load_button = QPushButton("Load E-books")
+        self.load_button = QPushButton("Load")
+        self.load_button.setIcon(QIcon("folder.png"))
         self.load_button.clicked.connect(self.load_ebooks)
 
-        self.filter_line_layout.addWidget(self.filter_label)
         self.filter_line_layout.addWidget(self.filter_name_input)
         self.filter_line_layout.addWidget(self.filter_author_input)
+        page_count = QHBoxLayout()
+        page_count.addWidget(self.filter_page_count_greater_input)
+        page_count.addWidget(self.filter_page_count_smaller_label)
+        page_count.addWidget(self.filter_page_count_smaller_input)
+        self.filter_line_layout.addLayout(page_count)
         self.filter_line_layout.addWidget(self.filter_genre_combobox)
-        self.filter_line_layout.addWidget(self.filter_page_count_greater_label)
-        self.filter_line_layout.addWidget(self.filter_page_count_greater_input)
-        self.filter_line_layout.addWidget(self.filter_page_count_smaller_label)
-        self.filter_line_layout.addWidget(self.filter_page_count_smaller_input)
-        self.filter_line_layout.addWidget(self.filter_button)
-        self.filter_line_layout.addWidget(self.clear_filters_button)
-        self.filter_line_layout.addWidget(self.load_button)
+
+        combobox_1=QHBoxLayout()
+        combobox_1.addWidget(self.filter_button)
+        combobox_1.addWidget(self.clear_filters_button)
+        combobox_1.addWidget(self.load_button)
+        self.filter_line_layout.addLayout(combobox_1)
         
         self.sort_combo = QComboBox()
         self.sort_combo.addItem("Sort by Name (A-Z)")
@@ -295,15 +377,17 @@ class EbookManagerApp(QMainWindow):
         self.sort_combo.addItem("Sort by Pages (Low to High)")
         self.sort_combo.addItem("Sort by Genre (A-Z)")
         self.sort_combo.currentIndexChanged.connect(self.sort_ebooks)
-        self.filter_line_layout.addWidget(self.sort_combo)
 
+
+        self.filter_line_layout.addWidget(self.sort_combo)
+        
         self.filter_layout.addLayout(self.filter_line_layout)
         self.filter_tags_layout = QHBoxLayout()
         self.filter_tags = QLabel("")
         self.filter_tags_layout.addWidget(self.filter_tags)
         self.filter_layout.addLayout(self.filter_tags_layout)
 
-        self.layout.addLayout(self.filter_layout)
+        #self.layout.addLayout(self.filter_layout)
 
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setWidgetResizable(True)
@@ -330,23 +414,23 @@ class EbookManagerApp(QMainWindow):
         
         self.playout = QVBoxLayout()
 
-        self.title_label = QLabel("title")  # Set the title_label text to the provided title
+        self.title_label = QLabel("title")
         self.title_label.setWordWrap(True)
 
-        self.auther_label = QLabel("Author")  # Set the title_label text to the provided title
+        self.auther_label = QLabel("Author")
         self.title_label.setWordWrap(True)
 
-        self.genre_label = QLabel("Genre")  # Set the title_label text to the provided title
+        self.genre_label = QLabel("Genre")  
         self.genre_label.setWordWrap(True)
 
-        self.Pages_label = QLabel("Pages")  # Set the title_label text to the provided title
+        self.Pages_label = QLabel("Pages")
         self.Pages_label.setWordWrap(True)
 
-        self.image_label = QLabel()  # Create a QLabel for displaying the image
-        # self.image_label.setFixedWidth(280)
-        self.image_label.setFixedHeight(480)
+        self.image_label = QLabel() 
+        self.image_label.setFixedWidth(280)
+        # self.image_label.setFixedHeight(300)
         self.pixmap = QPixmap("default.png")
-        self.pixmap = self.pixmap.scaled(280, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
+        self.pixmap = self.pixmap.scaled(175, 280, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
         self.image_label.setPixmap(self.pixmap)
         
         self.playout.addWidget(self.image_label)
@@ -356,6 +440,7 @@ class EbookManagerApp(QMainWindow):
         self.playout.addWidget(self.Pages_label)  # Update page count label
 
         self.preview_layout = QVBoxLayout()
+        self.preview_layout.addLayout(self.filter_layout)
         self.preview_layout.addLayout(self.playout)
         self.scroll_and_preview_layout.addLayout(self.preview_layout)
 
@@ -442,7 +527,7 @@ class EbookManagerApp(QMainWindow):
         else:
             # Load a default image if the image path is not valid
             self.pixmap = QPixmap("default.png")
-        self.pixmap = self.pixmap.scaled(280, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
+        self.pixmap = self.pixmap.scaled(prview_iamge_size, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
         self.image_label.setPixmap(self.pixmap)
 
     def update_applied_filters(self):
@@ -486,34 +571,6 @@ class EbookManagerApp(QMainWindow):
                     ebook_list.append({"title": title, "author": author, "genre": genre, "page_count": page_count, "file_path": file_path,"image_path": image_path})
         return ebook_list
 
-    def show_rename_dialog(self):
-        selected_row = self.grid_layout.indexOf(self.sender())
-        if selected_row != -1:
-            ebook = self.ebooks[selected_row]
-            old_title = ebook['title']
-            old_author = ebook['author']
-            old_genre = ebook['genre']
-            old_page_count = ebook['page_count']
-
-            dialog = RenameDialog(old_title, old_author, old_genre, old_page_count)
-            if dialog.exec() == QDialog.DialogCode.Accepted:
-                new_title = dialog.new_title_input.text()
-                new_author = dialog.new_author_input.text()
-                new_genre = dialog.new_genre_input.text()
-                new_page_count = dialog.new_page_count_input.value()
-
-                old_file_path = ebook['file_path']
-                file_extension = os.path.splitext(old_file_path)[1]
-                new_file_name = f"{new_title}+{new_author}+{new_genre}+{new_page_count}{file_extension}"
-                new_file_path = os.path.join(os.path.dirname(old_file_path), new_file_name)
-
-                os.rename(old_file_path, new_file_path)
-                self.ebooks[selected_row]['title'] = new_title
-                self.ebooks[selected_row]['author'] = new_author
-                self.ebooks[selected_row]['genre'] = new_genre
-                self.ebooks[selected_row]['page_count'] = new_page_count
-                self.ebooks[selected_row]['file_path'] = new_file_path
-                self.load_last_path()
 
     def open_ebook(self):
         selected_row = self.grid_layout.indexOf(self.sender())
@@ -527,8 +584,9 @@ class EbookManagerApp(QMainWindow):
         if len(parts) == 4:
             title, author, genre, page_count = parts
         else:
-            title = author = genre = "Unknown"
-            page_count = "1"
+            title = filename_without_extension 
+            author = genre = "Unknown"
+            page_count = "0"
         return title, author, genre, page_count
 
     def apply_filter(self):

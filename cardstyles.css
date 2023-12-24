@@ -1,0 +1,34 @@
+/* Material Style Sheet for QT Applications (QLabel) */
+QLabel {
+    color: #131f29;
+    background-color: transparent;
+
+    font-size: 12px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+
+}
+
+QLabel::hover {
+    color: #2a3c4a;
+}
+
+QLabel::selected {
+    background-color: #ffffff;
+}
+
+QLabel::disabled {
+    color: #808080;
+}
+
+QFrame[hoverState="true"] 
+{
+    background-color: #95cdfa;  /* Change this to your desired color */
+    border-radius: 16px;
+}
+
+QFrame[OpenState="true"] 
+{
+    background-color: #0c68b3;  /* Change this to your desired color */
+    border-radius: 16px;
+}

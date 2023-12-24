@@ -70,6 +70,7 @@ class RenameFileDialog(QDialog):
         self.layout.addWidget(self.image_path_button)
         self.layout.addWidget(self.paste_image_button)
         self.layout.addWidget(self.rename_button)
+        
 
     
     def select_image(self):
@@ -113,6 +114,10 @@ class RenameFileDialog(QDialog):
             result.putalpha(mask)
 
             result.save(image_path)
+
+        def load_stylesheet(self, stylesheet_file):
+            with open(stylesheet_file, "r") as file:
+                self.setStyleSheet(file.read())
 
 
 
