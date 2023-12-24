@@ -1,6 +1,6 @@
 # Ebook Manager App
 
-![App Screenshot](screenshot.png)
+![App Screenshot](Screenshot.png)
 
 ## Description
 
