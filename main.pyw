@@ -297,6 +297,7 @@ class EbookCard(QFrame):
 class EbookManagerApp(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(QIcon("icon.png"))
         self.init_ui()
         self.load_last_path()
 
@@ -527,7 +528,7 @@ class EbookManagerApp(QMainWindow):
         else:
             # Load a default image if the image path is not valid
             self.pixmap = QPixmap("default.png")
-        self.pixmap = self.pixmap.scaled(prview_iamge_size, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
+        self.pixmap = self.pixmap.scaled(240, 480, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
         self.image_label.setPixmap(self.pixmap)
 
     def update_applied_filters(self):
