@@ -144,6 +144,21 @@ class BookDatabase:
         finally:
             self.disconnect()
     
+    def book_exists(self, book_id):
+        self.connect()
+        
+        try:
+            self.cursor.execute('SELECT id FROM books WHERE id = ?', (book_id,))
+            book = self.cursor.fetchone()
+            
+        except sqlite3.Error as e:
+            print(f"SQLite error: {e}")
+        
+        finally:
+            self.disconnect()
+        
+        return bool(book)
+
     def get_book_by_title(self, title):
         self.connect()
         
@@ -270,3 +285,180 @@ class BookDatabase:
         
         finally:
             self.disconnect()
+
+
+class UserDatabase:
+    def __init__(self, db_file='books.db'):
+        self.db_file = db_file
+        self.conn = None
+        self.cursor = None
+    
+    def connect(self):
+        if not self.conn:
+            self.conn = sqlite3.connect(self.db_file)
+            self.cursor = self.conn.cursor()
+    
+    def disconnect(self):
+        if self.conn:
+            self.conn.close()
+            self.conn = None
+            self.cursor = None
+    
+    def create_tables(self):
+        self.connect()
+        try:
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY,
+                    username TEXT UNIQUE NOT NULL,
+                    password TEXT NOT NULL,
+                    email TEXT UNIQUE NOT NULL
+                )
+            ''')
+
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS user_books (
+                    user_id INTEGER,
+                    book_id INTEGER,
+                    progress INTEGER,
+                    PRIMARY KEY (user_id, book_id),
+                    FOREIGN KEY (user_id) REFERENCES users(id),
+                    FOREIGN KEY (book_id) REFERENCES books(id)
+                )
+            ''')
+
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS user_notes (
+                    id INTEGER PRIMARY KEY,
+                    user_id INTEGER,
+                    book_id INTEGER,
+                    note TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id),
+                    FOREIGN KEY (book_id) REFERENCES books(id)
+                )
+            ''')
+
+            self.conn.commit()
+        
+        except sqlite3.Error as e:
+            print(f"SQLite error (create_tables): {e}")
+            self.conn.rollback()
+        
+        finally:
+            self.disconnect()
+    
+    def create_user(self, username, password, email):
+        self.connect()
+        try:
+            self.cursor.execute('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', (username, password, email))
+            self.conn.commit()
+        except sqlite3.Error as e:
+            print(f"SQLite error (create_user): {e}")
+            self.conn.rollback()
+        finally:
+            self.disconnect()
+    
+    def user_exists(self, username):
+        self.connect()
+        try:
+            self.cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+            user_id = self.cursor.fetchone()
+            return user_id is not None
+        except sqlite3.Error as e:
+            print(f"SQLite error (user_exists): {e}")
+            return False
+        finally:
+            self.disconnect()
+    
+    def book_exists(self, book_id):
+        self.connect()
+        try:
+            self.cursor.execute('SELECT id FROM books WHERE id = ?', (book_id,))
+            book_id = self.cursor.fetchone()
+            return book_id is not None
+        except sqlite3.Error as e:
+            print(f"SQLite error (book_exists): {e}")
+            return False
+        finally:
+            self.disconnect()
+    
+    def add_user_book_progress(self, user_id, book_id, progress):
+        if not self.user_exists(user_id):
+            print(f"Error: User with id {user_id} does not exist.")
+            return
+        
+        if not self.book_exists(book_id):
+            print(f"Error: Book with id {book_id} does not exist.")
+            return
+        
+        self.connect()
+        try:
+            self.cursor.execute('INSERT OR REPLACE INTO user_books (user_id, book_id, progress) VALUES (?, ?, ?)', (user_id, book_id, progress))
+            self.conn.commit()
+        except sqlite3.Error as e:
+            print(f"SQLite error (add_user_book_progress): {e}")
+            self.conn.rollback()
+        finally:
+            self.disconnect()
+    
+    def get_user_book_progress(self, user_id, book_id):
+        if not self.user_exists(user_id):
+            print(f"Error: User with id {user_id} does not exist.")
+            return None
+        
+        if not self.book_exists(book_id):
+            print(f"Error: Book with id {book_id} does not exist.")
+            return None
+        
+        self.connect()
+        try:
+            self.cursor.execute('SELECT progress FROM user_books WHERE user_id = ? AND book_id = ?', (user_id, book_id))
+            progress = self.cursor.fetchone()
+            if progress:
+                progress = progress[0]
+        except sqlite3.Error as e:
+            print(f"SQLite error (get_user_book_progress): {e}")
+            progress = None
+        finally:
+            self.disconnect()
+        return progress
+
+    def add_user_note(self, user_id, book_id, note):
+        if not self.user_exists(user_id):
+            print(f"Error: User with id {user_id} does not exist.")
+            return
+        
+        if not self.book_exists(book_id):
+            print(f"Error: Book with id {book_id} does not exist.")
+            return
+        
+        self.connect()
+        try:
+            self.cursor.execute('INSERT INTO user_notes (user_id, book_id, note) VALUES (?, ?, ?)', (user_id, book_id, note))
+            self.conn.commit()
+        except sqlite3.Error as e:
+            print(f"SQLite error (add_user_note): {e}")
+            self.conn.rollback()
+        finally:
+            self.disconnect()
+    
+    def get_user_notes(self, user_id, book_id):
+        if not self.user_exists(user_id):
+            print(f"Error: User with id {user_id} does not exist.")
+            return []
+        
+        if not self.book_exists(book_id):
+            print(f"Error: Book with id {book_id} does not exist.")
+            return []
+        
+        self.connect()
+        try:
+            self.cursor.execute('SELECT note, timestamp FROM user_notes WHERE user_id = ? AND book_id = ?', (user_id, book_id))
+            notes = self.cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"SQLite error (get_user_notes): {e}")
+            notes = []
+        finally:
+            self.disconnect()
+        return notes
