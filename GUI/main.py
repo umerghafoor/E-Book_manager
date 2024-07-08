@@ -6,6 +6,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 
+from Views.Home import HomeView
+from Views.Library import LibraryView
+from Views.Settings import SettingsView
+
 class MainWindow(QWidget):
     panel_flag = False
     def __init__(self):
@@ -47,6 +51,9 @@ class MainWindow(QWidget):
 
         # Add functions of the buttons
         self.expand_button_fp.clicked.connect(self.toggle_side_panel)
+        self.home_button_fp.clicked.connect(self.show_home_view)
+        self.library_button_fp.clicked.connect(self.show_library_view)
+        self.settings_button_fp.clicked.connect(self.show_settings_view)
 
         # Add Items to side panel
         self.side_layout = QVBoxLayout()
@@ -65,34 +72,21 @@ class MainWindow(QWidget):
         ###########################################
 
         # Create main content area
-        self.main_content = QFrame(self)
-        self.main_content.setFrameShape(QFrame.Shape.StyledPanel)
         self.main_layout = QVBoxLayout()
-        self.main_content.setLayout(self.main_layout)
-
-        # Add label and button to main content area
-        self.button = QPushButton('Click to Add Buttons', self)
-        self.button.clicked.connect(self.test_on_button_click)
-        self.main_layout.addWidget(self.button)
-
-        # Create scrollable area for dynamic boxes
-        self.scroll_area = QScrollArea(self)
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_content = QWidget()
-        self.scroll_layout = QVBoxLayout(self.scroll_content)
-        self.grid_layout = QGridLayout()
-        self.scroll_layout.addLayout(self.grid_layout)
-        self.scroll_content.setLayout(self.scroll_layout)
-        self.scroll_area.setWidget(self.scroll_content)
-
-        # Add scrollable area to main layout
-        self.main_layout.addWidget(self.scroll_area)
-
+    
+    
         # Create splitter to make the layout responsive
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.splitter.setContentsMargins(0, 0, 0, 0)
         self.splitter.addWidget(self.side_panel)
-        self.splitter.addWidget(self.main_content)
+        self.main_content_frame = QFrame(self)
+        self.splitter.addWidget(self.main_content_frame)
+        self.main_content_frame.setLayout(self.main_layout)
         self.splitter.setSizes([200, 600])
+
+        # TODO : Change the view to the view you want to show first
+        self.show_home_view()
+        # self.show_library_view()
 
         ###########################################
         #      Finalizing Layout                  #
@@ -100,6 +94,7 @@ class MainWindow(QWidget):
 
         # Create main layout and add splitter
         self.main_layout_container = QHBoxLayout(self)
+        self.main_layout_container.setContentsMargins(0, 0, 0, 0)
         self.main_layout_container.addWidget(self.splitter)
         self.setLayout(self.main_layout_container)
 
@@ -135,7 +130,6 @@ class MainWindow(QWidget):
             toggle_state(True)
         else:
             toggle_state(False)
-        self.update_columns()
 
     def add_boxes_to_grid(self):
         # Clear the grid layout and reset widget tracking
@@ -154,25 +148,29 @@ class MainWindow(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        
         if self.width() > 1200:
             if not self.panel_flag:
                 self.toggle_side_panel()
         if self.width() < 800:
             if self.panel_flag:
                 self.toggle_side_panel()
-        
-        self.update_columns()
+    
+    def update_main_view(self, view_class):
+        for i in reversed(range(self.main_layout.count())):
+            widget = self.main_layout.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
+        view = view_class(self)
+        self.main_layout.addWidget(view)
 
-    def update_columns(self):
-        # Calculate the number of columns based on the current width
-        width = self.scroll_content.width()
-        self.columns = max(1, width // 120)  # Adjust the column width as needed
+    def show_home_view(self):
+        self.update_main_view(HomeView)
 
-        # Update positions of existing widgets in the grid layout
-        for i, widget in enumerate(self.widgets):
-            # TODO: Add custom cards or widgets here
-            self.grid_layout.addWidget(widget, i // self.columns, i % self.columns, Qt.AlignmentFlag.AlignTop)
+    def show_library_view(self):
+        self.update_main_view(LibraryView)
+
+    def show_settings_view(self):
+        self.update_main_view(SettingsView)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
