@@ -4,8 +4,4 @@ Test Data
 .venv
 build
 dist
-GUI/Views/__pycache__/card_book.cpython-312.pyc
-GUI/Views/__pycache__/Home.cpython-312.pyc
-GUI/Views/__pycache__/Settings.cpython-312.pyc
-GUI/Views/__pycache__/Library.cpython-312.pyc
-GUI/__pycache__/ccc.cpython-312.pyc
+*.pyc

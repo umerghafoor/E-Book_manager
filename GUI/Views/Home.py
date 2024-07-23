@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QGridLayout, QPushButton, QLineEdit, QSizePolicy, QHBoxLayout
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
-from Views.card_book import BoxWidget
+
+from Views.card_book import CardWidget
 
 class HomeView(QWidget):
     def __init__(self, parent=None):
@@ -55,7 +56,7 @@ class HomeView(QWidget):
         scroll_area.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setMinimumHeight(120)
+        scroll_area.setMinimumHeight(150+8+8+8)
         self.main_layout.addWidget(scroll_area)
 
         button = QPushButton(f"Add {title}")
@@ -71,12 +72,12 @@ class HomeView(QWidget):
         return scroll_area
 
     def add_recent_books(self, scroll_area):
-        self.add_items(scroll_area, "Recent Box")
+        self.add_items(scroll_area, "Recent Books")
 
     def add_my_queue(self, scroll_area):
-        self.add_items(scroll_area, "Queue Box")
+        self.add_items(scroll_area, "Queue books")
 
-    def add_items(self, area, prefix):
+    def add_items(self, area, add_func):
         for i in range(10):
-            box = BoxWidget(f'Box {i+1}', area.widget())
-            area.grid_layout.addWidget(box, 0, i, Qt.AlignmentFlag.AlignTop)
+            book = CardWidget("default.png","Title of the Book","Author",self)
+            area.grid_layout.addWidget(book, 0, i, Qt.AlignmentFlag.AlignTop)

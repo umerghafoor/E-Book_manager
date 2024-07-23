@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QGridLayout, QGroupBox, QPushButton, QLineEdit, QHBoxLayout, QSizePolicy
 from PyQt6.QtCore import Qt
 
-from Views.card_book import BoxWidget
+from Views.card_book import CardWidget
 
 class LibraryView(QWidget):
     def __init__(self, parent=None):
@@ -66,7 +66,7 @@ class LibraryView(QWidget):
         self.setLayout(self.main_layout)
 
         # Store added boxes to update on resize
-        self.boxes = []
+        self.books = []
 
     def on_search_features_click(self, feature):
         text = self.search_bar.text() 
@@ -97,9 +97,9 @@ class LibraryView(QWidget):
 
     def add_boxes(self):
         # Clear existing boxes
-        for i in range(5):
-            box = BoxWidget(f'Box {i+1}', self.scroll_content)
-            self.boxes.append(box)
+        for i in range(10):
+            box = CardWidget("default.png","Title of the Book","Author",self)
+            self.books.append(box)
         self.update_boxes()
 
     def resizeEvent(self, event):
@@ -108,6 +108,6 @@ class LibraryView(QWidget):
 
     def update_boxes(self):
         width = self.scroll_area.viewport().width()
-        self.columns = max(1, width // 160)  # 150 for box width + 10 for spacing
-        for i, box in enumerate(self.boxes):
+        self.columns = max(1, width // (250+10))  # 150 for box width + 10 for spacing
+        for i, box in enumerate(self.books):
             self.grid_layout.addWidget(box, i // self.columns, i % self.columns, Qt.AlignmentFlag.AlignTop)
