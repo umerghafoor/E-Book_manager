@@ -20,6 +20,7 @@ class MainWindow(QWidget):
         self.setWindowTitle('Ebook Manger')
         # TODO : Change the window size based on previus session
         self.setGeometry(100, 100, 800, 600)
+        self.load_stylesheet('style.css')
 
         ###########################################
         #      Creating Side panel                #
@@ -103,6 +104,11 @@ class MainWindow(QWidget):
 
         self.show()
         self.toggle_side_panel()
+    
+    def load_stylesheet(self, stylesheet_file):
+        # Load and apply the style sheet from the file
+        with open(stylesheet_file, "r") as file:
+            self.setStyleSheet(file.read())
 
     def test_on_button_click(self):
         self.add_boxes_to_grid()
