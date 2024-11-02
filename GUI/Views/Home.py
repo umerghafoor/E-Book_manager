@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QGridLayo
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 
-from Views.card_book import CardWidget
+from GUI.Views.card_book import CardWidget
 
 class HomeView(QWidget):
     def __init__(self, parent=None):

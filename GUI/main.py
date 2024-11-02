@@ -6,9 +6,9 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 
-from Views.Home import HomeView
-from Views.Library import LibraryView
-from Views.Settings import SettingsView
+from GUI.Views.Home import HomeView
+from GUI.Views.Library import LibraryView
+from GUI.Views.Settings import SettingsView
 
 class MainWindow(QWidget):
     panel_flag = False
@@ -178,7 +178,3 @@ class MainWindow(QWidget):
     def show_settings_view(self):
         self.update_main_view(SettingsView)
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    sys.exit(app.exec())

@@ -7,3 +7,4 @@ dist
 database/__pycache__/database_setup.cpython-312.pyc
 database/books.db
 *.pyc
+books.db

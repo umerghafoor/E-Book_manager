@@ -3,3 +3,4 @@ from .Home import HomeView
 from .Library import LibraryView
 from .Settings import SettingsView
 from .card_book import CardWidget
+from .book_info import BookDetailsDialog

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QScrollArea, QGridLayout, QGroupBox, QPushButton, QLineEdit, QHBoxLayout, QSizePolicy
 from PyQt6.QtCore import Qt
 
-from Views.card_book import CardWidget
+from GUI.Views.card_book import CardWidget
 
 class LibraryView(QWidget):
     def __init__(self, parent=None):
