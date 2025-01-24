@@ -71,11 +71,13 @@ class BookDatabase:
     
     def add_author(self, name,close_conection=True):
         self.connect()
+        author_id = None
         try:
             # Check if author already exists
             
             self.cursor.execute('SELECT id FROM authors WHERE name = ?', (name,))
             author = self.cursor.fetchone()
+            print(author)
             if author:
                 author_id = author[0]
             else:
@@ -91,6 +93,7 @@ class BookDatabase:
         finally:
             if close_conection:
                 self.disconnect()
+            print(author_id)
         
         return author_id
     
@@ -173,22 +176,25 @@ class BookDatabase:
             self.disconnect()
         
         return book
-    
     def get_all_books(self):
         self.connect()
         
         try:
             self.cursor.execute('SELECT * FROM books')
-            books = self.cursor.fetchall()
+            columns = [column[0] for column in self.cursor.description]
+            books = [dict(zip(columns, row)) for row in self.cursor.fetchall()]
             
         except sqlite3.Error as e:
             print(f"SQLite error: {e}")
+            books = []
         
         finally:
             self.disconnect()
         
         return books
     
+
+
     def get_tags_by_book_id(self, book_id):
         self.connect()
         
@@ -259,7 +265,7 @@ class BookDatabase:
                 self.cursor.execute('DELETE FROM book_tags WHERE book_id = ?', (book_id,))
                 
                 for tag in tags.split(', '):
-                    tag_id = self.add_tag(tag)
+                    tag_id = self.add_tag(tag, close_conection=False)
                     self.cursor.execute('INSERT INTO book_tags (book_id, tag_id) VALUES (?, ?)', (book_id, tag_id))
             
             self.conn.commit()
@@ -285,6 +291,21 @@ class BookDatabase:
         
         finally:
             self.disconnect()
+
+    def get_auther_by_id(self, author_id):
+        self.connect()
+        
+        try:
+            self.cursor.execute('SELECT name FROM authors WHERE id = ?', (author_id,))
+            author = self.cursor.fetchone()
+            
+        except sqlite3.Error as e:
+            print(f"SQLite error: {e}")
+        
+        finally:
+            self.disconnect()
+        
+        return author
 
 
 class UserDatabase:

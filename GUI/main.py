@@ -143,6 +143,13 @@ class MainWindow(QWidget):
             widget.setParent(None)
         self.widgets = []
 
+        # books = book_db.get_all_books()
+        #load all books from the database
+        books = []
+        print("This is the books", books)
+
+
+
         # Add new fixed-size boxes
         num_boxes = 1000  # Adjust this to add more boxes
         for i in range(num_boxes):

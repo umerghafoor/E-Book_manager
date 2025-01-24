@@ -1,4 +1,3 @@
-
 from GUI.main import MainWindow
 
 import sys
